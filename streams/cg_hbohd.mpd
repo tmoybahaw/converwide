@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MPD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:mpeg:dash:schema:mpd:2011" xsi:schemaLocation="urn:mpeg:dash:schema:mpd:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd" id="84" type="dynamic" publishTime="2025-06-27T06:19:15" minimumUpdatePeriod="PT6S" availabilityStartTime="2024-07-11T14:39:16.841000+00:00" minBufferTime="PT10S" suggestedPresentationDelay="PT32.00S" timeShiftBufferDepth="PT1798.40S" profiles="urn:mpeg:dash:profile:isoff-live:2011">
+  <Period start="PT0.00S" id="1">
+    <AdaptationSet mimeType="video/mp4" segmentAlignment="true" subsegmentAlignment="true" startWithSAP="1" subsegmentStartsWithSAP="1" bitstreamSwitching="true">
+      <Representation id="1" width="416" height="234" frameRate="30/1" bandwidth="200000" codecs="avc1.4D400D">
+        <ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="D47EBABF-7A21-430B-83A8-C4B82D9EF6B1" xmlns:cenc="urn:mpeg:cenc:2013"/>
+        <ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
+          <cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAYnBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAAEISENR+ur96IUMLg6jEuC2e9rEaDnF1aWNrcGxheW1lZGlhIhgxSDY2djNvaFF3dURxTVM0TFo3MnNRPT1I49yVmwY=</cenc:pssh>
+        </ContentProtection>
+        <SegmentTemplate timescale="30" media="cg_hbohd_video_1_0_$Number$.mp4?m=1725655015" initialization="cg_hbohd_video_1_0_init.mp4?m=1725655015" startNumber="7046009">
+          <SegmentTimeline>
+            <S t="908838136" d="192" r="280"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+      <Representation id="2" width="480" height="270" frameRate="30/1" bandwidth="400000" codecs="avc1.4D4015">
+        <ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="D47EBABF-7A21-430B-83A8-C4B82D9EF6B1" xmlns:cenc="urn:mpeg:cenc:2013"/>
+        <ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
+          <cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAYnBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAAEISENR+ur96IUMLg6jEuC2e9rEaDnF1aWNrcGxheW1lZGlhIhgxSDY2djNvaFF3dURxTVM0TFo3MnNRPT1I49yVmwY=</cenc:pssh>
+        </ContentProtection>
+        <SegmentTemplate timescale="30" media="cg_hbohd_video_1_1_$Number$.mp4?m=1725655015" initialization="cg_hbohd_video_1_1_init.mp4?m=1725655015" startNumber="7046009">
+          <SegmentTimeline>
+            <S t="908838136" d="192" r="280"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+      <Representation id="3" width="640" height="360" frameRate="30/1" bandwidth="800000" codecs="avc1.4D401E">
+        <ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="D47EBABF-7A21-430B-83A8-C4B82D9EF6B1" xmlns:cenc="urn:mpeg:cenc:2013"/>
+        <ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
+          <cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAYnBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAAEISENR+ur96IUMLg6jEuC2e9rEaDnF1aWNrcGxheW1lZGlhIhgxSDY2djNvaFF3dURxTVM0TFo3MnNRPT1I49yVmwY=</cenc:pssh>
+        </ContentProtection>
+        <SegmentTemplate timescale="30" media="cg_hbohd_video_1_2_$Number$.mp4?m=1725655015" initialization="cg_hbohd_video_1_2_init.mp4?m=1725655015" startNumber="7046009">
+          <SegmentTimeline>
+            <S t="908838136" d="192" r="280"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+      <Representation id="4" width="768" height="432" frameRate="30/1" bandwidth="1200000" codecs="avc1.4D401E">
+        <ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="D47EBABF-7A21-430B-83A8-C4B82D9EF6B1" xmlns:cenc="urn:mpeg:cenc:2013"/>
+        <ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
+          <cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAYnBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAAEISENR+ur96IUMLg6jEuC2e9rEaDnF1aWNrcGxheW1lZGlhIhgxSDY2djNvaFF3dURxTVM0TFo3MnNRPT1I49yVmwY=</cenc:pssh>
+        </ContentProtection>
+        <SegmentTemplate timescale="30" media="cg_hbohd_video_1_3_$Number$.mp4?m=1725655015" initialization="cg_hbohd_video_1_3_init.mp4?m=1725655015" startNumber="7046009">
+          <SegmentTimeline>
+            <S t="908838136" d="192" r="280"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+      <Representation id="5" width="1280" height="720" frameRate="30/1" bandwidth="2400000" codecs="avc1.4D401F">
+        <ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="D47EBABF-7A21-430B-83A8-C4B82D9EF6B1" xmlns:cenc="urn:mpeg:cenc:2013"/>
+        <ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
+          <cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAYnBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAAEISENR+ur96IUMLg6jEuC2e9rEaDnF1aWNrcGxheW1lZGlhIhgxSDY2djNvaFF3dURxTVM0TFo3MnNRPT1I49yVmwY=</cenc:pssh>
+        </ContentProtection>
+        <SegmentTemplate timescale="30" media="cg_hbohd_video_1_4_$Number$.mp4?m=1725655015" initialization="cg_hbohd_video_1_4_init.mp4?m=1725655015" startNumber="7046009">
+          <SegmentTimeline>
+            <S t="908838136" d="192" r="280"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+      <Representation id="6" width="1920" height="1080" frameRate="30/1" bandwidth="4499968" codecs="avc1.4D4028">
+        <ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="D47EBABF-7A21-430B-83A8-C4B82D9EF6B1" xmlns:cenc="urn:mpeg:cenc:2013"/>
+        <ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
+          <cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAYnBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAAEISENR+ur96IUMLg6jEuC2e9rEaDnF1aWNrcGxheW1lZGlhIhgxSDY2djNvaFF3dURxTVM0TFo3MnNRPT1I49yVmwY=</cenc:pssh>
+        </ContentProtection>
+        <SegmentTemplate timescale="30" media="cg_hbohd_video_1_5_$Number$.mp4?m=1725655015" initialization="cg_hbohd_video_1_5_init.mp4?m=1725655015" startNumber="7046009">
+          <SegmentTimeline>
+            <S t="908838136" d="192" r="280"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet mimeType="audio/mp4" segmentAlignment="0" lang="eng">
+      <Representation id="7" bandwidth="63945" audioSamplingRate="48000" codecs="mp4a.40.2">
+        <ContentProtection schemeIdUri="urn:mpeg:dash:mp4protection:2011" value="cenc" cenc:default_KID="D47EBABF-7A21-430B-83A8-C4B82D9EF6B1" xmlns:cenc="urn:mpeg:cenc:2013"/>
+        <ContentProtection schemeIdUri="urn:uuid:edef8ba9-79d6-4ace-a3c8-27dcd51d21ed">
+          <cenc:pssh xmlns:cenc="urn:mpeg:cenc:2013">AAAAYnBzc2gAAAAA7e+LqXnWSs6jyCfc1R0h7QAAAEISENR+ur96IUMLg6jEuC2e9rEaDnF1aWNrcGxheW1lZGlhIhgxSDY2djNvaFF3dURxTVM0TFo3MnNRPT1I49yVmwY=</cenc:pssh>
+        </ContentProtection>
+        <SegmentTemplate timescale="48000" media="cg_hbohd_audio_1_6_$Number$.mp4?m=1725655015" initialization="cg_hbohd_audio_1_6_init.mp4?m=1725655015" startNumber="7046009">
+          <SegmentTimeline>
+            <S t="1454141020313" d="307200" r="280"/>
+          </SegmentTimeline>
+        </SegmentTemplate>
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>
