@@ -1,44 +1,41 @@
 const express = require('express');
-const fetch = require('node-fetch'); // Use global fetch if on Node 18+
+const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.raw({ type: '*/*', limit: '50mb' }));
 
 // Allow CORS
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Token');
+  res.setHeader('Access-Control-Allow-Headers', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
 
-// Generic proxy for media and license requests
 app.all('/proxy', async (req, res) => {
   const target = req.query.target;
   if (!target) return res.status(400).send('Missing target URL');
 
   try {
-    // Collect headers from the incoming request to forward to the target
     const forwardHeaders = {
       ...req.headers,
-      'host': new URL(target).host // Set host header to the target host
+      host: new URL(target).host,
+      'user-agent': req.headers['user-agent'] || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36'
     };
 
-    // Remove headers that should not be forwarded
     delete forwardHeaders.cookie;
-    delete forwardHeaders['content-length']; // This will be set automatically by fetch
-    
-    // Create a new request body from the incoming request
-    const body = req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined;
+    delete forwardHeaders['content-length'];
 
     const upstream = await fetch(target, {
       method: req.method,
       headers: forwardHeaders,
-      body: body,
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined,
       redirect: 'follow'
     });
 
-    // Forward the status and headers from the upstream response
     res.status(upstream.status);
     upstream.headers.forEach((value, key) => {
       if (key.toLowerCase() !== 'content-length') {
@@ -46,7 +43,6 @@ app.all('/proxy', async (req, res) => {
       }
     });
 
-    // Pipe the response body
     upstream.body.pipe(res);
   } catch (err) {
     console.error('Proxy error:', err);
