@@ -1,0 +1,78 @@
+//manifest.mpd?virtualDomain=001.live_hls.zte.com
+<?xml version="1.0"?>
+<MPD
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="urn:mpeg:dash:schema:mpd:2011"
+    xsi:schemaLocation="urn:mpeg:dash:schema:mpd:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd"
+    type="dynamic"
+    minimumUpdatePeriod="PT3.000S"
+    availabilityStartTime="2017-02-22T16:00:00Z"
+    publishTime="2025-08-15T22:55:54Z"
+    timeShiftBufferDepth="PT36.036S"
+    minBufferTime="PT6.000S"
+    profiles="urn:mpeg:dash:profile:isoff-live:2011,http://dashif.org/guidelines/dash-if-simple">
+  <Period id="0" start="PT0S">
+    <AdaptationSet
+        id="1"
+        segmentAlignment="true"
+        maxWidth="720"
+        maxHeight="480"
+        maxFrameRate="30000/1001">
+        <SegmentTemplate
+            timescale="1000"
+            media="fragment-$Time$-$RepresentationID$.m4s?JITPDRMType=NO&amp;IASHttpSessionId=OTT2925720250815225607005891&amp;ztecid=ch00000090990000001244&amp;virtualDomain=001.live_hls.zte.com&amp;ispcode=55&amp;JITPMediaType=HLS&amp;m4s_min=1&amp;isjitp=0&amp;startNumber=44586554&amp;filedura=6"
+            initialization="init-$RepresentationID$.mp4?JITPDRMType=NO&amp;IASHttpSessionId=OTT2925720250815225607005891&amp;ztecid=ch00000090990000001244&amp;virtualDomain=001.live_hls.zte.com&amp;ispcode=55&amp;JITPMediaType=HLS&amp;m4s_min=1&amp;isjitp=0&amp;startNumber=44586554&amp;filedura=6"
+            startNumber="44586554">
+            <SegmentTimeline>
+                <S t="267519318949" d="6006" r="5"/>
+            </SegmentTimeline>
+        </SegmentTemplate>
+      <Representation
+          id="f1-v1-x3"
+          mimeType="video/mp4"
+          codecs="avc1.4d401e"
+          width="720"
+          height="480"
+          frameRate="30000/1001"
+          sar="1:1"
+          startWithSAP="1"
+          bandwidth="1402843">
+      </Representation>
+      <Representation
+          id="f2-v1-x3"
+          mimeType="video/mp4"
+          codecs="avc1.4d400d"
+          width="12"
+          height="12"
+          frameRate="30000/1001"
+          sar="1:1"
+          startWithSAP="1"
+          bandwidth="400000">
+      </Representation>
+    </AdaptationSet>
+    <AdaptationSet
+        id="2"
+        segmentAlignment="true">
+      <AudioChannelConfiguration
+          schemeIdUri="urn:mpeg:dash:23003:3:audio_channel_configuration:2011"
+          value="2"/>
+        <SegmentTemplate
+            timescale="1000"
+            media="fragment-$Time$-$RepresentationID$.m4s?JITPDRMType=NO&amp;IASHttpSessionId=OTT2925720250815225607005891&amp;ztecid=ch00000090990000001244&amp;virtualDomain=001.live_hls.zte.com&amp;ispcode=55&amp;JITPMediaType=HLS&amp;m4s_min=1&amp;isjitp=0&amp;startNumber=44586554&amp;filedura=6"
+            initialization="init-$RepresentationID$.mp4?JITPDRMType=NO&amp;IASHttpSessionId=OTT2925720250815225607005891&amp;ztecid=ch00000090990000001244&amp;virtualDomain=001.live_hls.zte.com&amp;ispcode=55&amp;JITPMediaType=HLS&amp;m4s_min=1&amp;isjitp=0&amp;startNumber=44586554&amp;filedura=6"
+            startNumber="44586554">
+            <SegmentTimeline>
+                <S t="267519318949" d="6006" r="5"/>
+            </SegmentTimeline>
+        </SegmentTemplate>
+      <Representation
+          id="f1-a1-x3"
+          mimeType="audio/mp4"
+          codecs="mp4a.40.2"
+          audioSamplingRate="48000"
+          startWithSAP="1"
+          bandwidth="125373">
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>
