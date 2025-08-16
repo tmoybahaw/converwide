@@ -2,89 +2,51 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Shaka Player DASH + HLS</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <title>Shaka Player Proxy Test</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.3/shaka-player.compiled.js"></script>
-  <style>
-    body { background:#111; color:#fff; font-family:sans-serif; }
-    #video { width:80%; height:60vh; background:#000; display:block; margin:20px auto; }
-    #log { max-width:80%; margin:20px auto; font-size:14px; background:#222; padding:10px; border-radius:6px; }
-  </style>
 </head>
-<body>
-  <h2 style="text-align:center">Shaka Player (DASH + HLS)</h2>
-  <video id="video" controls autoplay></video>
-  <div id="log"></div>
+<body style="background:#000; margin:0; display:flex; height:100vh; align-items:center; justify-content:center;">
+  <video id="video" width="800" controls autoplay></video>
 
   <script>
-    function log(msg, error=false){
-      console.log(msg);
-      $("#log").append(`<div style="color:${error?'#f55':'#aaa'}">${msg}</div>`);
-    }
-
-    async function playItem(it){
-      const video = document.getElementById("video");
-
-      if (!window.shaka){
-        log("Shaka not loaded", true); return;
-      }
+    async function init() {
+      // Install polyfills
       shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()){
-        log("Browser not supported.", true); return;
+      if (!shaka.Player.isBrowserSupported()) {
+        console.error("Browser not supported!");
+        return;
       }
 
-      const player = new shaka.Player();
-      await player.attach(video);
+      const video = document.getElementById('video');
+      const player = new shaka.Player(video);
 
-      player.addEventListener('error', e => {
-        const se = e.detail;
-        log("Shaka Error: " + (se ? se.code + " " + JSON.stringify(se.data) : ""), true);
-      });
+      // Log errors
+      player.addEventListener('error', e => console.error('Shaka Error', e.detail));
 
-      const cfg = { drm: {} };
-      if (it.type === 'org.w3.clearkey' && it.clearkeys){
-        cfg.drm.clearKeys = it.clearkeys;
-        log(`Playing (ClearKey): ${it.name}`);
-      } else if (it.type === 'com.widevine.alpha' && it.license){
-        cfg.drm.servers = { 'com.widevine.alpha': it.license };
-        log(`Playing (Widevine): ${it.name}`);
-      } else {
-        log(`Playing (No DRM): ${it.name}`);
-      }
-      player.configure(cfg);
+      // 🚨 Networking override: force everything through /api/proxy
+      const proxyScheme = (uri, request, requestType) => {
+        const proxied = "/api/proxy?url=" + encodeURIComponent(uri);
+        return shaka.net.HttpPlugin.parse(proxied, request, requestType);
+      };
 
-      try{
-        const proxiedUrl = "/api/proxy?url=" + encodeURIComponent(it.url);
+      // Override both HTTP + HTTPS
+      shaka.net.NetworkingEngine.registerScheme('http', proxyScheme);
+      shaka.net.NetworkingEngine.registerScheme('https', proxyScheme);
 
-        if (it.url.endsWith(".m3u8")){
-          // HLS
-          await player.load(proxiedUrl, null, "application/x-mpegURL");
-        } else {
-          // Default → DASH
-          await player.load(proxiedUrl);
-        }
-        log(`Loaded: ${it.name}`);
-      }catch(err){
-        log(`Load failed: ${err}`, true);
+      // Replace this with your DASH MPD link
+      const manifestUri = "/api/proxy?url=" + encodeURIComponent(
+        "http://143.44.136.110:6910/001/2/ch00000090990000001093/manifest.mpd?virtualDomain=001.live_hls.zte.com"
+      );
+
+      try {
+        await player.load(manifestUri);
+        console.log("Loaded:", manifestUri);
+      } catch (err) {
+        console.error("Load failed:", err);
       }
     }
 
-    // 🔹 Test both
-    $(document).ready(()=>{
-      // DASH sample
-      playItem({
-        name: "GMA 7 (DASH)",
-        url: "http://143.44.136.110:6910/001/2/ch00000090990000001093/manifest.mpd?virtualDomain=001.live_hls.zte.com",
-        type: null
-      });
-
-      // Example HLS (replace with your own)
-      // playItem({
-      //   name: "Sample HLS",
-      //   url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-      //   type: null
-      // });
-    });
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
