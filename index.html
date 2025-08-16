@@ -1,211 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📺MaruyaTV M3U DRM Player(Shaka)</title>
-  <script src="ajax/libs/shaka-player/4.9.3/shaka-player.compiled.js"></script>
+  <meta charset="UTF-8">
+  <title>Live DASH Player</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.0/shaka-player.compiled.js"></script>
   <style>
-    :root { --bg:#0b0e11; --panel:#12161c; --text:#e8ecf1; --muted:#9aa7b4; --accent:#4f8cff; }
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
-    .wrap{display:grid;grid-template-columns:340px 1fr;min-height:100vh}
-    aside{background:var(--panel);border-right:1px solid #1e2530;display:flex;flex-direction:column}
-    .pad{padding:12px}
-    h1{font-size:16px;margin:12px}
-    textarea, input[type="text"]{width:100%;background:#0d1117;color:var(--text);border:1px solid #253041;border-radius:10px;padding:10px}
-    button{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:10px 14px;cursor:pointer}
-    .row{display:flex;gap:8px;align-items:center}
-    .list{overflow:auto;height:calc(100vh - 320px);padding:8px}
-    .item{padding:10px;border-radius:10px;cursor:pointer;border:1px solid #1e2530;margin-bottom:8px;transition:background .2s}
-    .item:hover{background:#111827}
-    .badge{font-size:11px;color:#cdd6e3;background:#1e2530;padding:2px 6px;border-radius:6px;margin-left:8px}
-    .small{color:var(--muted);font-size:12px}
-    main{position:relative}
-    video{width:100%;height:100vh;background:#000}
-    .status{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,.6);border:1px solid #2b3442;color:#fff;border-radius:10px;padding:8px 10px;font-size:12px;max-width:60ch}
-    .err{color:#ff6b6b}
-    @media (max-width:960px){.wrap{grid-template-columns:1fr} aside{order:2} main{order:1} video{height:56.25vw} .list{height:40vh}}
+    body {
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    video {
+      width: 720px;
+      height: 576px;
+      background: black;
+    }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <aside>
-    <h1>📺MaruyaTV M3U DRM Player</h1>
-    <div class="pad small">Paste your <b>#</b> M3U entries below or load from URL.</div>
-    <div class="pad row">
-      <input id="m3uUrl" type="text" placeholder="https://example.com/playlist.m3u" />
-      <button id="btnFetch">Fetch</button>
-    </div>
-    <div class="pad">
-      <textarea id="m3uText" rows="10" placeholder="#EXTINF.."></textarea>
-    </div>
-    <div class="pad row">
-      <button id="btnParse">Parse Channels</button>
-      <button id="btnDemo">Load Converge</button>
-    </div>
-    <div class="list" id="list"></div>
-  </aside>
-  <main>
-    <video id="video" controls autoplay muted playsinline></video>
-    <div class="status" id="status">Ready.</div>
-  </main>
-</div>
+  <video id="video" controls autoplay></video>
+  <script>
+    async function initPlayer() {
+      // Install built-in polyfills
+      shaka.polyfill.installAll();
 
-<script>
-const $ = (s)=>document.querySelector(s);
-const log = (msg, isErr=false)=>{
-  const el = $("#status");
-  el.textContent = msg;
-  el.classList.toggle("err", !!isErr);
-  console[isErr?"error":"log"](msg);
-};
-
-function parseM3U(text){
-  const lines = text.split(/[\r\n]+/).map(l=>l.trim()).filter(Boolean);
-  const items = [];
-  let cur = null;
-  for (let i=0;i<lines.length;i++){
-    const line = lines[i];
-    if (line.startsWith('#EXTINF')){
-      cur = { name: line.split(',').slice(1).join(',').trim() || 'Channel', attrs: {}, type:null, license:null, clearkeys:null, logo:null, group:null };
-      // parse attributes in EXTINF
-      const attrs = line.match(/([a-z0-9\-]+)="([^"]*)"/gi) || [];
-      for (const a of attrs){
-        const [k,v] = a.split('=');
-        cur.attrs[k.toLowerCase()] = v.replace(/^"|"$/g,'');
+      if (!shaka.Player.isBrowserSupported()) {
+        alert('Browser not supported!');
+        return;
       }
-      cur.logo = cur.attrs['tvg-logo'] || null;
-      cur.group = cur.attrs['group-title'] || null;
-    } else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_type=')){
-      cur && (cur.type = line.split('=').pop().trim());
-    } else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')){
-      const val = line.split('=').pop().trim();
-      if (cur){
-        if (cur.type === 'org.w3.clearkey'){
-          // clearkey can be json or kid:key
-          if (val.includes(':') && !val.trim().startsWith('{')){
-            const [kid,key] = val.split(':').map(s=>s.trim());
-            cur.clearkeys = {[kid]: key};
-          } else {
-            try { cur.clearkeys = JSON.parse(val); } catch(e){}
-          }
-        } else {
-          cur.license = val;
+
+      const video = document.getElementById('video');
+      const player = new shaka.Player(video);
+
+      // Optional: enable live catch-up for short live window
+      player.configure({
+        streaming: {
+          liveCatchUp: true,
+          rebufferingGoal: 12, // seconds of buffer
+          bufferingGoal: 24
         }
+      });
+
+      // Listen for errors
+      player.addEventListener('error', e => {
+        console.error('Shaka Player Error:', e.detail);
+      });
+
+      const mpdUrl = 'http://143.44.136.110:6910/001/2/ch00000090990000001305/manifest.mpd?virtualDomain=001.live_hls.zte.com&IASHttpSessionId=OTT2909020250816165854007211';
+
+      try {
+        await player.load(mpdUrl);
+        console.log('Live DASH feed loaded!');
+      } catch (error) {
+        console.error('Error loading live feed:', error);
       }
-    } else if (!line.startsWith('#') && cur){
-      cur.url = line;
-      items.push(cur);
-      cur = null;
     }
-  }
-  return items;
-}
 
-async function playItem(it){
-  const video = $("#video");
-  if (!window.shaka){
-    log("Shaka not loaded", true); return;
-  }
-  shaka.polyfill.installAll();
-  if (!shaka.Player.isBrowserSupported()){
-    log("Browser not supported for EME/DRM.", true); return;
-  }
-  const player = new shaka.Player(video);
-
-  // Reset status on new errors
-  player.addEventListener('error', e => {
-    const se = e.detail;
-    log("Shaka Error: " + (se ? se.code + " " + (se.data ? JSON.stringify(se.data) : "") : ""), true);
-  });
-
-  // Basic config
-  const cfg = { drm: {} };
-  if (it.type === 'org.w3.clearkey' && it.clearkeys){
-    cfg.drm.clearKeys = it.clearkeys;
-    log(`Playing (ClearKey): ${it.name}`);
-  } else if (it.type === 'com.widevine.alpha' && it.license){
-    cfg.drm.servers = { 'com.widevine.alpha': it.license };
-    log(`Playing (Widevine): ${it.name}`);
-  } else {
-    log(`Playing (No DRM): ${it.name}`);
-  }
-  player.configure(cfg);
-
-  try{
-    await player.load(it.url);
-    log(`Loaded: ${it.name}`);
-  }catch(err){
-    log(`Load failed: ${err}`, true);
-  }
-}
-
-function renderList(items){
-  const box = $("#list");
-  box.innerHTML = "";
-  if (!items.length){
-    box.innerHTML = '<div class="small">No channels parsed.</div>'; 
-    return;
-  }
-  items.forEach((it,idx)=>{
-    const div = document.createElement('div');
-    div.className = 'item';
-    const drm = it.type ? 
-      (it.type.includes('clearkey') ? 'ClearKey' : 
-      (it.type.includes('widevine')?'Widevine':'Other')) : 'None';
-
-    div.innerHTML = `
-      <div class="row">
-        ${it.logo ? `<img src="${it.logo}" style="width:40px;height:40px;object-fit:cover;border-radius:50%;background:#000;margin-right:10px">` : `<div style="width:40px;height:40px;border-radius:50%;background:#222;color:#777;display:flex;align-items:center;justify-content:center;margin-right:10px">📺</div>`}
-        <div>
-          <div><b>${it.name}</b> <span class="badge">${drm}</span></div>
-          ${it.license ? `<div class="small">License: ${it.license}</div>`:''}
-          ${it.clearkeys ? `<div class="small">Keys: ${Object.keys(it.clearkeys).length} KID(s)</div>`:''}
-        </div>
-      </div>
-    `;
-    div.addEventListener('click', ()=> playItem(it));
-    box.appendChild(div);
-  });
-}
-
-$("#btnParse").addEventListener('click', ()=>{
-  const items = parseM3U($("#m3uText").value);
-  renderList(items);
-});
-
-$("#btnFetch").addEventListener('click', async ()=>{
-  const url = $("#m3uUrl").value.trim();
-  if (!url) return;
-  try{
-    const res = await fetch(url);
-    const txt = await res.text();
-    $("#m3uText").value = txt;
-    const items = parseM3U(txt);
-    renderList(items);
-    log("Fetched and parsed playlist.");
-  }catch(e){
-    log("Fetch failed: " + e, true);
-  }
-});
-
-$("#btnDemo").addEventListener('click', ()=>{
-  const sample = `#KODIPROP:inputstream.adaptive.license_type=com.widevine.alpha
-#KODIPROP:inputstream.adaptive.license_key=http://143.44.136.74:9443/widevine/?deviceId=02:00:00:00:00:00
-#EXTINF:-1 tvg-logo="https://i.imgur.com/cmOdVwr.png" group-title="Converge", GMA 7
-http://143.44.136.110:6910/001/2/ch00000090990000001093/manifest.mpd?virtualDomain=001.live_hls.zte.com
-
-#KODIPROP:inputstream.adaptive.license_type=com.widevine.alpha
-#KODIPROP:inputstream.adaptive.license_key=http://143.44.136.74:9443/widevine/?deviceId=02:00:00:00:00:00
-#EXTINF:-1 tvg-logo="https://i.ibb.co/wgjPKFW/IMG-20241029-111906.png" group-title="Converge", Tap Action Flix
-http://143.44.136.110:6910/001/2/ch00000090990000001305/manifest.mpd?virtualDomain=001.live_hls.zte.com
-
-`;
-  $("#m3uText").value = sample;
-  const items = parseM3U(sample);
-  renderList(items);
-  log("Loaded Converge entries.");
-});
-</script>
+    initPlayer();
+  </script>
 </body>
 </html>
