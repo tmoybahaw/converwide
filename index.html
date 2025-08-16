@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Shaka Player Proxy Test</title>
+  <title>Shaka Player Proxy + Auto Detect</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.3/shaka-player.compiled.js"></script>
 </head>
 <body style="background:#000; margin:0; display:flex; height:100vh; align-items:center; justify-content:center;">
@@ -10,7 +10,6 @@
 
   <script>
     async function init() {
-      // Install polyfills
       shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) {
         console.error("Browser not supported!");
@@ -18,31 +17,38 @@
       }
 
       const video = document.getElementById('video');
-      const player = new shaka.Player(video);
+      const player = new shaka.Player();
+      await player.attach(video);
 
-      // Log errors
+      // Error handling
       player.addEventListener('error', e => console.error('Shaka Error', e.detail));
 
-      // 🚨 Networking override: force everything through /api/proxy
+      // 🚨 Proxy override
       const proxyScheme = (uri, request, requestType) => {
         const proxied = "/api/proxy?url=" + encodeURIComponent(uri);
         return shaka.net.HttpPlugin.parse(proxied, request, requestType);
       };
-
-      // Override both HTTP + HTTPS
       shaka.net.NetworkingEngine.registerScheme('http', proxyScheme);
       shaka.net.NetworkingEngine.registerScheme('https', proxyScheme);
 
-      // Replace this with your DASH MPD link
-      const manifestUri = "/api/proxy?url=" + encodeURIComponent(
-        "https://nanopi.rocket-tv.online/Astro_AOD/default_primary.mpd"
-      );
+      // 🔗 Example streams (DASH + HLS)
+      const DASH_URL = "http://143.44.136.110:6910/001/2/ch00000090990000001093/manifest.mpd?virtualDomain=001.live_hls.zte.com";
+      const HLS_URL  = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";  // sample HLS
+
+      // Auto-select by extension
+      let manifestUri = DASH_URL;  // default
+      if (HLS_URL.endsWith(".m3u8")) {
+        manifestUri = HLS_URL;
+      }
+
+      // Always wrap with proxy
+      manifestUri = "/api/proxy?url=" + encodeURIComponent(manifestUri);
 
       try {
         await player.load(manifestUri);
-        console.log("Loaded:", manifestUri);
+        console.log("✅ Loaded:", manifestUri);
       } catch (err) {
-        console.error("Load failed:", err);
+        console.error("❌ Load failed:", err);
       }
     }
 
