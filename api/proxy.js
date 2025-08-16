@@ -8,73 +8,46 @@ export default async function handler(req, res) {
       return res.status(400).send("Missing url parameter");
     }
 
-
     const response = await fetch(targetUrl, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-          "Accept": "*/*",
-    "Origin": req.headers["origin"] || "http://localhost",
-    "Referer": req.headers["referer"] || "http://localhost/",
+        "Accept": "*/*",
+        "Origin": req.headers["origin"] || "http://localhost",
+        "Referer": req.headers["referer"] || "http://localhost/",
       },
     });
 
+    // Get content-type
     let contentType = response.headers.get("content-type") || "";
 
-if (targetUrl.includes(".mpd")) {
-  contentType = "application/dash+xml";
-} else if (targetUrl.includes(".m3u8")) {
-  contentType = "application/vnd.apple.mpegurl";
-} else if (!contentType) {
-  contentType = "application/octet-stream";
-}
+    // Handle DASH MPD
+    if (targetUrl.includes(".mpd") || contentType.includes("xml")) {
+      let xml = await response.text();
 
-
-    const buffer = await response.arrayBuffer();
-    let data = Buffer.from(buffer);
-
-    // ---- DASH MPD Handling ----
-    if (
-      contentType.includes("xml") ||
-      contentType.includes("mpd") ||
-      targetUrl.includes(".mpd")
-    ) {
-      let xml = data.toString("utf8");
-
-      // Rewrite <BaseURL>
       xml = xml.replace(/<BaseURL>(.*?)<\/BaseURL>/g, (match, url) => {
         const absUrl = new URL(url, targetUrl).href;
-        const proxied = "/api/proxy?url=" + encodeURIComponent(absUrl);
-        return `<BaseURL>${proxied}</BaseURL>`;
+        return `<BaseURL>/api/proxy?url=${encodeURIComponent(absUrl)}</BaseURL>`;
       });
 
-      // Rewrite initialization
       xml = xml.replace(/(initialization=")([^"]+)"/g, (m, p1, url) => {
         const absUrl = new URL(url, targetUrl).href;
-        const proxied = "/api/proxy?url=" + encodeURIComponent(absUrl);
-        return `${p1}${proxied}"`;
+        return `${p1}/api/proxy?url=${encodeURIComponent(absUrl)}"`;
       });
 
-      // Rewrite media
       xml = xml.replace(/(media=")([^"]+)"/g, (m, p1, url) => {
         const absUrl = new URL(url, targetUrl).href;
-        const proxied = "/api/proxy?url=" + encodeURIComponent(absUrl);
-        return `${p1}${proxied}"`;
+        return `${p1}/api/proxy?url=${encodeURIComponent(absUrl)}"`;
       });
 
-      data = Buffer.from(xml, "utf8");
-      contentType = "application/dash+xml";
+      res.setHeader("Content-Type", "application/dash+xml");
+      return res.status(200).send(xml);
     }
 
-    // ---- HLS M3U8 Handling ----
-    else if (
-      contentType.includes("mpegurl") ||
-      contentType.includes("m3u8") ||
-      targetUrl.includes(".m3u8")
-    ) {
-      let m3u8 = data.toString("utf8");
+    // Handle HLS M3U8
+    if (targetUrl.includes(".m3u8") || contentType.includes("mpegurl")) {
+      let m3u8 = await response.text();
 
-      // Rewrite every non-#EXT line (segment or playlist URLs)
       m3u8 = m3u8.replace(/^(?!#)(.*)$/gm, (line) => {
         if (!line.trim()) return line;
         try {
@@ -85,13 +58,20 @@ if (targetUrl.includes(".mpd")) {
         }
       });
 
-      data = Buffer.from(m3u8, "utf8");
-      contentType = "application/vnd.apple.mpegurl";
+      res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
+      return res.status(200).send(m3u8);
     }
 
-    // ---- Forward Response ----
-    res.setHeader("Content-Type", contentType);
-    res.status(response.status).send(data);
+    // Otherwise → stream directly (video segments, init files, etc.)
+    res.setHeader("Content-Type", contentType || "application/octet-stream");
+    res.status(response.status);
+
+    // Stream the body
+    if (response.body) {
+      response.body.pipe(res);
+    } else {
+      res.end();
+    }
   } catch (err) {
     console.error("Proxy error:", err);
     res.status(500).send("Proxy error");
