@@ -8,10 +8,14 @@ export default async function handler(req, res) {
       return res.status(400).send("Missing url parameter");
     }
 
+
     const response = await fetch(targetUrl, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+          "Accept": "*/*",
+    "Origin": req.headers["origin"] || "http://localhost",
+    "Referer": req.headers["referer"] || "http://localhost/",
       },
     });
 
