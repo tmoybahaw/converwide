@@ -15,9 +15,16 @@ export default async function handler(req, res) {
       },
     });
 
-    let contentType =
-      response.headers.get("content-type") || "application/octet-stream";
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    let contentType = response.headers.get("content-type") || "";
+
+if (targetUrl.includes(".mpd")) {
+  contentType = "application/dash+xml";
+} else if (targetUrl.includes(".m3u8")) {
+  contentType = "application/vnd.apple.mpegurl";
+} else if (!contentType) {
+  contentType = "application/octet-stream";
+}
+
 
     const buffer = await response.arrayBuffer();
     let data = Buffer.from(buffer);
