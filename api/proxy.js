@@ -1,6 +1,4 @@
 // api/proxy.js
-import fetch from "node-fetch";
-
 export default async function handler(req, res) {
   try {
     const { url } = req.query;
@@ -9,13 +7,13 @@ export default async function handler(req, res) {
       return;
     }
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      res.status(response.status).send("Upstream error");
+    const upstream = await fetch(url);
+    if (!upstream.ok) {
+      res.status(upstream.status).send("Upstream error");
       return;
     }
 
-    // Guess MIME by extension
+    // Detect MIME
     let contentType = "application/octet-stream";
     if (url.includes(".mpd")) {
       contentType = "application/dash+xml";
@@ -23,7 +21,9 @@ export default async function handler(req, res) {
       contentType = "application/vnd.apple.mpegurl";
     }
 
-    const buf = await response.buffer();
+    const arrayBuf = await upstream.arrayBuffer();
+    const buf = Buffer.from(arrayBuf);
+
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Content-Type", contentType);
     res.send(buf);
