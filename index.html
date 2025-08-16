@@ -1,65 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Live DASH Player</title>
+  <meta charset="UTF-8" />
+  <title>Converwide Player (DASH + HLS)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.9.0/shaka-player.compiled.js"></script>
   <style>
+    :root { color-scheme: dark; }
     body {
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+      margin: 0; background: #0b0b0b; color: #eaeaea;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+      display: grid; place-items: center; min-height: 100dvh; padding: 16px;
     }
-    video {
-      width: 720px;
-      height: 576px;
-      background: black;
+    .card {
+      width: min(960px, 96vw); background: #141414; border-radius: 16px; padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35); border: 1px solid #232323;
     }
+    .row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    input[type="url"] {
+      flex: 1 1 520px; padding: 10px 12px; border-radius: 10px; border: 1px solid #303030; background: #0f0f0f; color: #eaeaea;
+    }
+    button {
+      padding: 10px 14px; border-radius: 10px; border: 1px solid #303030; background: #1f1f1f; color: #fff; cursor: pointer;
+    }
+    button:hover { background: #2a2a2a; }
+    video { width: 100%; max-height: 70vh; background: #000; border-radius: 12px; }
+    .hint { font-size: 12px; color: #b3b3b3; margin-top: 8px; }
+    .log { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; background:#0f0f0f; padding:8px; border-radius:10px; max-height:18vh; overflow:auto; border:1px solid #262626;}
   </style>
 </head>
 <body>
-  <video id="video" controls autoplay></video>
-  <script>
-    async function initPlayer() {
-      // Install built-in polyfills
-      shaka.polyfill.installAll();
+  <div class="card">
+    <div class="row">
+      <input id="src" type="url" placeholder="Paste MPD or M3U8 origin URL (HTTP/HTTPS)" />
+      <button id="play">Play</button>
+      <button id="stop">Stop</button>
+    </div>
+    <video id="video" controls autoplay playsinline></video>
+    <div class="hint">
+      Tip: You can paste your ZTE MPD or any HLS .m3u8 here. The player loads it via
+      <code>/api/proxy</code> to avoid mixed content and to fix relative URLs.
+    </div>
+    <div class="log" id="log"></div>
+  </div>
 
+  <script>
+    let player;
+
+    function logLine(msg, data) {
+      const el = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      el.textContent += `[${time}] ${msg}${data ? " " + JSON.stringify(data) : ""}\n`;
+      el.scrollTop = el.scrollHeight;
+      console.log(msg, data || "");
+    }
+
+    async function init() {
+      shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) {
-        alert('Browser not supported!');
-        return;
+        alert('Browser not supported'); return;
       }
 
       const video = document.getElementById('video');
-      const player = new shaka.Player(video);
+      player = new shaka.Player();
 
-      // Optional: enable live catch-up for short live window
+      player.addEventListener('error', (e) => logLine('Shaka error', e.detail));
+      player.addEventListener('loading', () => logLine('loading...'));
+      player.addEventListener('loaded', () => logLine('loaded'));
+      player.addEventListener('streaming', () => logLine('streaming started'));
+
+      // Attach using the new API (avoids deprecation)
+      await player.attach(video);
+
+      // Sensible live settings for tiny live windows
       player.configure({
         streaming: {
           liveCatchUp: true,
-          rebufferingGoal: 12, // seconds of buffer
-          bufferingGoal: 24
-        }
+          rebufferingGoal: 12,
+          bufferingGoal: 24,
+        },
       });
 
-      // Listen for errors
-      player.addEventListener('error', e => {
-        console.error('Shaka Player Error:', e.detail);
+      // Default source (your ZTE MPD) – you can change it in the input then press Play
+      const defaultSrc = "http://143.44.136.110:6910/001/2/ch00000090990000001305/manifest.mpd?virtualDomain=001.live_hls.zte.com&IASHttpSessionId=OTT2909020250816165854007211";
+      document.getElementById('src').value = defaultSrc;
+
+      document.getElementById('play').addEventListener('click', () => loadFromInput());
+      document.getElementById('stop').addEventListener('click', () => {
+        try { video.pause(); video.removeAttribute('src'); video.load(); logLine('stopped'); } catch {}
       });
 
-      const mpdUrl = 'http://143.44.136.110:6910/001/2/ch00000090990000001305/manifest.mpd?virtualDomain=001.live_hls.zte.com&IASHttpSessionId=OTT2909020250816165854007211';
+      // Auto-play default on load
+      await loadUrl(defaultSrc);
+    }
 
+    function proxify(url) {
+      return "/api/proxy?url=" + encodeURIComponent(url);
+    }
+
+    async function loadFromInput() {
+      const raw = document.getElementById('src').value.trim();
+      if (!raw) return;
+      await loadUrl(raw);
+    }
+
+    async function loadUrl(rawUrl) {
       try {
-        await player.load(mpdUrl);
-        console.log('Live DASH feed loaded!');
-      } catch (error) {
-        console.error('Error loading live feed:', error);
+        const url = proxify(rawUrl);
+        await player.load(url);
+        logLine('Loaded', { url: rawUrl });
+      } catch (e) {
+        logLine('Load failed', e);
       }
     }
 
-    initPlayer();
+    init();
   </script>
 </body>
 </html>
