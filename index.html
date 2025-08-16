@@ -32,8 +32,9 @@
       shaka.net.NetworkingEngine.registerScheme('https', proxyScheme);
 
       // 🔗 Example streams (DASH + HLS)
-      const DASH_URL = "http://143.44.136.110:6910/001/2/ch00000090990000001093/manifest.mpd?virtualDomain=001.live_hls.zte.com";
-      const HLS_URL  = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";  // sample HLS
+      const DASH_URL = "https://linearjitp-playback.astro.com.my/dash-wv/linear/609/default_primary.mpd"
+                       "https://qp-pldt-live-grp-06-prod.akamaized.net/out/u/smart_sdi8.mpd";
+      const HLS_URL  = "https://aseanic.github.io/hls/28.m3u8";  // sample HLS
 
       // Auto-select by extension
       let manifestUri = DASH_URL;  // default
